@@ -19,6 +19,7 @@ export default function App() {
   const [latest, setLatest] = useState([]);
   const [watchlist, setWatchlist] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [showWatchlist, setShowWatchlist] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
 
   /* ---------------- LOAD DATA ---------------- */
@@ -163,7 +164,14 @@ export default function App() {
       {/* NAV */}
       <nav className="nav">
         <div className="logo">🎬 MovieDiscovery</div>
-        <div>❤️ Watchlist ({watchlist.length})</div>
+
+        {/* CLICKABLE WATCHLIST */}
+        <button
+          className="watchlist-btn"
+          onClick={() => setShowWatchlist(true)}
+        >
+          ❤️ Watchlist ({watchlist.length})
+        </button>
       </nav>
 
       {/* AI SEARCH */}
@@ -171,10 +179,15 @@ export default function App() {
         <h1>AI Movie Recommender</h1>
 
         <div className="search">
+          {/* WHITE SEARCH BAR */}
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="e.g. Picnic movies with friends"
+            style={{
+              background: "#ffffff",
+              color: "#000000",
+            }}
           />
           <button onClick={askAI} disabled={loadingAI}>
             {loadingAI ? "Thinking..." : "Ask AI"}
@@ -211,6 +224,41 @@ export default function App() {
             <div>
               <h2>{selected.title}</h2>
               <p>{selected.overview}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WATCHLIST MODAL */}
+      {showWatchlist && (
+        <div className="modal" onClick={() => setShowWatchlist(false)}>
+          <div
+            className="modal-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Your Watchlist</h2>
+
+            {watchlist.length === 0 && <p>No movies yet.</p>}
+
+            <div className="row">
+              {watchlist.map((m) => (
+                <div
+                  className="card"
+                  key={m.id}
+                  onClick={() => {
+                    setSelected(m);
+                    setShowWatchlist(false);
+                  }}
+                >
+                  <img
+                    src={m.poster || "/placeholder.png"}
+                    alt={m.title}
+                  />
+                  <div className="card-info">
+                    <h4>{m.title}</h4>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
