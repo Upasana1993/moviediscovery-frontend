@@ -18,6 +18,7 @@ export default function App() {
   const [trending, setTrending] = useState([]);
   const [latest, setLatest] = useState([]);
   const [watchlist, setWatchlist] = useState([]);
+  const [selected, setSelected] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
 
   /* ---------------- LOAD DATA ---------------- */
@@ -60,21 +61,28 @@ export default function App() {
     );
   };
 
+  const isInWatchlist = (movie) =>
+    watchlist.some((m) => m.id === movie.id);
+
+  /* ---------------- MOVIE ROW ---------------- */
   const Row = ({ title, movies }) => (
     <>
       <h2 className="row-title">{title}</h2>
       <div className="row">
         {movies.map((movie) => (
-          <div className="card" key={movie.id}>
+          <div
+            className="card"
+            key={movie.id}
+            onClick={() => setSelected(movie)}
+          >
             <button
-              className={`heart ${
-                watchlist.some((m) => m.id === movie.id)
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() => toggleWatchlist(movie)}
+              className={`heart ${isInWatchlist(movie) ? "active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleWatchlist(movie);
+              }}
             >
-              ❤️
+              {isInWatchlist(movie) ? "❤️" : "🤍"}
             </button>
 
             <img
@@ -91,13 +99,42 @@ export default function App() {
 
               <div className="providers">
                 {movie.providers?.netflix && (
-                  <img src="/netflix.png" alt="Netflix" />
+                  <a
+                    href={`https://www.netflix.com/search?q=${encodeURIComponent(
+                      movie.title
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img src="/netflix.png" alt="Netflix" />
+                  </a>
                 )}
+
                 {movie.providers?.prime && (
-                  <img src="/prime.png" alt="Prime Video" />
+                  <a
+                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(
+                      movie.title
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img src="/prime.png" alt="Prime Video" />
+                  </a>
                 )}
+
                 {movie.providers?.bookmyshow && (
-                  <img src="/bms.png" alt="BookMyShow" />
+                  <a
+                    href={`https://in.bookmyshow.com/explore/movies?q=${encodeURIComponent(
+                      movie.title
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img src="/bms.png" alt="BookMyShow" />
+                  </a>
                 )}
               </div>
             </div>
@@ -141,6 +178,22 @@ export default function App() {
       )}
       <Row title="🔥 Trending" movies={trending} />
       <Row title="🆕 Latest Releases" movies={latest} />
+
+      {/* MOVIE MODAL */}
+      {selected && (
+        <div className="modal" onClick={() => setSelected(null)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={selected.poster || "/placeholder.png"}
+              alt={selected.title}
+            />
+            <div>
+              <h2>{selected.title}</h2>
+              <p>{selected.overview}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
