@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 const IMG = "https://image.tmdb.org/t/p/w500";
-const API = "http://localhost:5000"; // change to Render URL later
+const API = process.env.REACT_APP_API_BASE_URL; // change to Render URL later
 
 const PROMPTS = [
   "Baby-friendly movies",
