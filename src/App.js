@@ -55,7 +55,8 @@ export default function App() {
     const data = await res.json();
     console.log("AI response:", data);
 
-    setAiPicks(Array.isArray(data) ? data : []);
+    // ✅ THIS LINE FIXES EVERYTHING
+    setAiPicks(Array.isArray(data.results) ? data.results : []);
   } catch (e) {
     console.error(e);
     alert("AI failed. Please try again.");
@@ -63,6 +64,7 @@ export default function App() {
     setLoadingAI(false);
   }
 };
+
 
   /* ---------------- WATCHLIST ---------------- */
   const toggleWatchlist = (movie) => {
