@@ -17,24 +17,20 @@ export default function App() {
   const [aiPicks, setAiPicks] = useState([]);
   const [trending, setTrending] = useState([]);
   const [latest, setLatest] = useState([]);
+
   const [watchlist, setWatchlist] = useState([]);
-  const [selected, setSelected] = useState(null);
   const [showWatchlist, setShowWatchlist] = useState(false);
+  const [selected, setSelected] = useState(null);
+
   const [loadingAI, setLoadingAI] = useState(false);
+  const [wakingUp, setWakingUp] = useState(false);
 
   /* ---------------- LOAD DATA ---------------- */
   useEffect(() => {
     if (!API) return;
 
-    fetch(`${API}/trending`)
-      .then((r) => r.json())
-      .then(setTrending)
-      .catch(console.error);
-
-    fetch(`${API}/latest`)
-      .then((r) => r.json())
-      .then(setLatest)
-      .catch(console.error);
+    fetch(`${API}/trending`).then(r => r.json()).then(setTrending);
+    fetch(`${API}/latest`).then(r => r.json()).then(setLatest);
   }, []);
 
   /* ---------------- ASK AI ---------------- */
@@ -43,6 +39,10 @@ export default function App() {
 
     setLoadingAI(true);
     setAiPicks([]);
+
+    const wakeupTimer = setTimeout(() => {
+      setWakingUp(true);
+    }, 3000);
 
     try {
       const res = await fetch(`${API}/recommend`, {
@@ -53,10 +53,11 @@ export default function App() {
 
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
-    } catch (e) {
-      console.error(e);
-      alert("AI failed. Try again.");
+    } catch {
+      alert("Backend is waking up. Please try again.");
     } finally {
+      clearTimeout(wakeupTimer);
+      setWakingUp(false);
       setLoadingAI(false);
     }
   };
@@ -84,7 +85,6 @@ export default function App() {
             key={movie.id}
             onClick={() => setSelected(movie)}
           >
-            {/* WATCHLIST HEART */}
             <button
               className={`heart ${isInWatchlist(movie) ? "active" : ""}`}
               onClick={(e) => {
@@ -95,13 +95,11 @@ export default function App() {
               {isInWatchlist(movie) ? "❤️" : "🤍"}
             </button>
 
-            {/* POSTER */}
             <img
               src={movie.poster || "/placeholder.png"}
               alt={movie.title}
             />
 
-            {/* INFO */}
             <div className="card-info">
               <h4>{movie.title}</h4>
 
@@ -111,13 +109,10 @@ export default function App() {
 
               <p>{movie.overview?.slice(0, 90)}…</p>
 
-              {/* PROVIDERS */}
               <div className="providers">
                 {movie.providers?.netflix && (
                   <a
-                    href={`https://www.netflix.com/search?q=${encodeURIComponent(
-                      movie.title
-                    )}`}
+                    href={`https://www.netflix.com/search?q=${encodeURIComponent(movie.title)}`}
                     target="_blank"
                     rel="noreferrer noopener"
                     onClick={(e) => e.stopPropagation()}
@@ -128,9 +123,7 @@ export default function App() {
 
                 {movie.providers?.prime && (
                   <a
-                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(
-                      movie.title
-                    )}`}
+                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(movie.title)}`}
                     target="_blank"
                     rel="noreferrer noopener"
                     onClick={(e) => e.stopPropagation()}
@@ -141,9 +134,7 @@ export default function App() {
 
                 {movie.providers?.bookmyshow && (
                   <a
-                    href={`https://in.bookmyshow.com/explore/movies?q=${encodeURIComponent(
-                      movie.title
-                    )}`}
+                    href={`https://in.bookmyshow.com/explore/movies?q=${encodeURIComponent(movie.title)}`}
                     target="_blank"
                     rel="noreferrer noopener"
                     onClick={(e) => e.stopPropagation()}
@@ -164,8 +155,6 @@ export default function App() {
       {/* NAV */}
       <nav className="nav">
         <div className="logo">🎬 MovieDiscovery</div>
-
-        {/* CLICKABLE WATCHLIST */}
         <button
           className="watchlist-btn"
           onClick={() => setShowWatchlist(true)}
@@ -176,18 +165,12 @@ export default function App() {
 
       {/* AI SEARCH */}
       <section className="ai">
-        <h1>AI Movie Recommender</h1>
-
         <div className="search">
-          {/* WHITE SEARCH BAR */}
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="e.g. Picnic movies with friends"
-            style={{
-              background: "#ffffff",
-              color: "#000000",
-            }}
+            style={{ background: "#fff", color: "#000" }}
           />
           <button onClick={askAI} disabled={loadingAI}>
             {loadingAI ? "Thinking..." : "Ask AI"}
@@ -203,28 +186,17 @@ export default function App() {
         </div>
       </section>
 
-      {/* ROWS */}
-      {aiPicks.length > 0 && (
-        <Row title="🎯 AI Picks" movies={aiPicks} />
-      )}
+      {aiPicks.length > 0 && <Row title="🎯 AI Picks" movies={aiPicks} />}
       <Row title="🔥 Trending" movies={trending} />
       <Row title="🆕 Latest Releases" movies={latest} />
 
       {/* MOVIE MODAL */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
-          <div
-            className="modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={selected.poster || "/placeholder.png"}
-              alt={selected.title}
-            />
-            <div>
-              <h2>{selected.title}</h2>
-              <p>{selected.overview}</p>
-            </div>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <img src={selected.poster || "/placeholder.png"} />
+            <h2>{selected.title}</h2>
+            <p>{selected.overview}</p>
           </div>
         </div>
       )}
@@ -232,35 +204,32 @@ export default function App() {
       {/* WATCHLIST MODAL */}
       {showWatchlist && (
         <div className="modal" onClick={() => setShowWatchlist(false)}>
-          <div
-            className="modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-box watchlist-modal" onClick={(e) => e.stopPropagation()}>
             <h2>Your Watchlist</h2>
 
             {watchlist.length === 0 && <p>No movies yet.</p>}
 
-            <div className="row">
-              {watchlist.map((m) => (
-                <div
-                  className="card"
-                  key={m.id}
-                  onClick={() => {
-                    setSelected(m);
-                    setShowWatchlist(false);
-                  }}
-                >
-                  <img
-                    src={m.poster || "/placeholder.png"}
-                    alt={m.title}
-                  />
-                  <div className="card-info">
-                    <h4>{m.title}</h4>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {watchlist.map((m) => (
+              <div
+                key={m.id}
+                className="watchlist-item"
+                onClick={() => {
+                  setSelected(m);
+                  setShowWatchlist(false);
+                }}
+              >
+                <img src={m.poster || "/placeholder.png"} />
+                <span>{m.title}</span>
+              </div>
+            ))}
           </div>
+        </div>
+      )}
+
+      {/* WAKEUP TOAST */}
+      {wakingUp && (
+        <div className="wakeup-toast">
+          ⏳ Waking up the server… first request may take a moment
         </div>
       )}
     </div>
