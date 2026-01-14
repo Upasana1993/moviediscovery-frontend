@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 const IMG = "https://image.tmdb.org/t/p/w500";
-const API = process.env.REACT_APP_API_BASE_URL; // change to Render URL later
+const API = process.env.REACT_APP_API_BASE_URL ||
+  "http://localhost:5000"; // change to Render URL later
 
 const PROMPTS = [
   "Baby-friendly movies",
@@ -38,26 +39,27 @@ export default function App() {
 
   /* ---------------- ASK AI ---------------- */
   const askAI = async () => {
-    if (!prompt.trim()) return;
+  if (!prompt.trim()) return;
 
-    setLoadingAI(true);
-    setAiPicks([]);
+  setLoadingAI(true);
+  setAiPicks([]);
 
-    try {
-      const res = await fetch(`${API}/recommend`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
+  try {
+    const res = await fetch(`${API}/recommend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
 
-      const data = await res.json();
-      setAiPicks(data.results || []);
-    } catch {
-      alert("AI failed. Try again.");
-    } finally {
-      setLoadingAI(false);
-    }
-  };
+    const data = await res.json();
+    setAiPicks(Array.isArray(data) ? data : []);
+  } catch {
+    alert("AI failed. Try again.");
+  } finally {
+    setLoadingAI(false);
+  }
+};
+
 
   /* ---------------- WATCHLIST ---------------- */
   const toggleWatchlist = (movie) => {
@@ -69,7 +71,10 @@ export default function App() {
   };
 
   const isInWatchlist = (movie) =>
-    watchlist.some((m) => m.id === movie.id);
+  watchlist.some((m) =>
+    m.id ? m.id === movie.id : m.title === movie.title
+  );
+
 
   /* ---------------- MOVIE ROW ---------------- */
   const Row = ({ title, movies }) => (
@@ -79,7 +84,7 @@ export default function App() {
         {movies.map((movie) => (
           <div
             className="card"
-            key={movie.id}
+            key={movie.id || movie.title}
             onClick={() => setSelected(movie)}
           >
             <button
