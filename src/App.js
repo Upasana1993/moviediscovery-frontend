@@ -17,19 +17,16 @@ export default function App() {
   const [aiPicks, setAiPicks] = useState([]);
   const [trending, setTrending] = useState([]);
   const [latest, setLatest] = useState([]);
-
   const [watchlist, setWatchlist] = useState([]);
-  const [showWatchlist, setShowWatchlist] = useState(false);
   const [selected, setSelected] = useState(null);
-
   const [loadingAI, setLoadingAI] = useState(false);
 
   /* ---------------- LOAD DATA ---------------- */
   useEffect(() => {
     if (!API) return;
 
-    fetch(`${API}/trending`).then(r => r.json()).then(setTrending);
-    fetch(`${API}/latest`).then(r => r.json()).then(setLatest);
+    fetch(`${API}/trending`).then((r) => r.json()).then(setTrending);
+    fetch(`${API}/latest`).then((r) => r.json()).then(setLatest);
   }, []);
 
   /* ---------------- ASK AI ---------------- */
@@ -45,9 +42,10 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
+
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
-    } catch (e) {
+    } catch {
       alert("AI failed. Try again.");
     } finally {
       setLoadingAI(false);
@@ -71,10 +69,10 @@ export default function App() {
     <>
       <h2 className="row-title">{title}</h2>
       <div className="row">
-        {movies.map((movie, i) => (
+        {movies.map((movie) => (
           <div
             className="card"
-            key={movie.id || i}
+            key={movie.id}
             onClick={() => setSelected(movie)}
           >
             <button
@@ -94,11 +92,9 @@ export default function App() {
 
             <div className="card-info">
               <h4>{movie.title}</h4>
-
               {movie.rating && (
                 <span>⭐ {movie.rating.toFixed(1)}</span>
               )}
-
               <p>{movie.overview?.slice(0, 90)}…</p>
 
               <div className="providers">
@@ -124,7 +120,7 @@ export default function App() {
                     rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <img src="/prime.png" alt="Prime" />
+                    <img src="/prime.png" alt="Prime Video" />
                   </a>
                 )}
 
@@ -150,21 +146,18 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* NAV */}
       <nav className="nav">
         <div className="logo">🎬 MovieDiscovery</div>
-        <button onClick={() => setShowWatchlist(true)}>
-          ❤️ Watchlist ({watchlist.length})
-        </button>
+        <div>❤️ Watchlist ({watchlist.length})</div>
       </nav>
 
-      {/* AI */}
       <section className="ai">
+        <h1>AI Movie Recommender</h1>
         <div className="search">
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Ask AI for movie recommendations"
+            placeholder="e.g. Picnic movies with friends"
           />
           <button onClick={askAI} disabled={loadingAI}>
             {loadingAI ? "Thinking..." : "Ask AI"}
@@ -184,37 +177,20 @@ export default function App() {
         <Row title="🎯 AI Picks" movies={aiPicks} />
       )}
       <Row title="🔥 Trending" movies={trending} />
-      <Row title="🆕 Latest" movies={latest} />
+      <Row title="🆕 Latest Releases" movies={latest} />
 
       {/* MOVIE MODAL */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
-          <div
-            className="modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <img
               src={selected.poster || "/placeholder.png"}
               alt={selected.title}
             />
-            <h2>{selected.title}</h2>
-            <p>{selected.overview}</p>
-          </div>
-        </div>
-      )}
-
-      {/* WATCHLIST MODAL */}
-      {showWatchlist && (
-        <div className="modal" onClick={() => setShowWatchlist(false)}>
-          <div
-            className="modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>Your Watchlist</h2>
-            {watchlist.length === 0 && <p>No movies yet.</p>}
-            {watchlist.map((m) => (
-              <p key={m.id}>{m.title}</p>
-            ))}
+            <div>
+              <h2>{selected.title}</h2>
+              <p>{selected.overview}</p>
+            </div>
           </div>
         </div>
       )}
