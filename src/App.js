@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 const IMG = "https://image.tmdb.org/t/p/w500";
-const API = process.env.REACT_APP_API_BASE_URL ||
-  "http://localhost:5000"; // change to Render URL later
+const API = process.env.REACT_APP_API_BASE_URL;
 
 const PROMPTS = [
   "Baby-friendly movies",
@@ -26,65 +25,70 @@ export default function App() {
 
   /* ---------------- LOAD DATA ---------------- */
   useEffect(() => {
+    if (!API) return;
+
     fetch(`${API}/trending`)
       .then((r) => r.json())
       .then(setTrending)
-      .catch(() => {});
+      .catch(console.error);
 
     fetch(`${API}/latest`)
       .then((r) => r.json())
       .then(setLatest)
-      .catch(() => {});
+      .catch(console.error);
   }, []);
 
   /* ---------------- ASK AI ---------------- */
   const askAI = async () => {
-  if (!prompt.trim()) return;
+    if (!prompt.trim() || !API) return;
 
-  setLoadingAI(true);
-  setAiPicks([]);
+    setLoadingAI(true);
+    setAiPicks([]);
 
-  try {
-    const res = await fetch(`${API}/recommend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
+    try {
+      const res = await fetch(`${API}/recommend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
 
-    const data = await res.json();
-    setAiPicks(Array.isArray(data) ? data : []);
-  } catch {
-    alert("AI failed. Try again.");
-  } finally {
-    setLoadingAI(false);
-  }
-};
-
+      const data = await res.json();
+      setAiPicks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      alert("AI failed. Please try again.");
+    } finally {
+      setLoadingAI(false);
+    }
+  };
 
   /* ---------------- WATCHLIST ---------------- */
   const toggleWatchlist = (movie) => {
     setWatchlist((prev) =>
-      prev.some((m) => m.id === movie.id)
-        ? prev.filter((m) => m.id !== movie.id)
+      prev.some((m) =>
+        m.id ? m.id === movie.id : m.title === movie.title
+      )
+        ? prev.filter((m) =>
+            m.id ? m.id !== movie.id : m.title !== movie.title
+          )
         : [...prev, movie]
     );
   };
 
   const isInWatchlist = (movie) =>
-  watchlist.some((m) =>
-    m.id ? m.id === movie.id : m.title === movie.title
-  );
-
+    watchlist.some((m) =>
+      m.id ? m.id === movie.id : m.title === movie.title
+    );
 
   /* ---------------- MOVIE ROW ---------------- */
   const Row = ({ title, movies }) => (
     <>
       <h2 className="row-title">{title}</h2>
       <div className="row">
-        {movies.map((movie) => (
+        {movies.map((movie, i) => (
           <div
             className="card"
-            key={movie.id || movie.title}
+            key={movie.id || movie.title || i}
             onClick={() => setSelected(movie)}
           >
             <button
@@ -108,32 +112,29 @@ export default function App() {
 
             <div className="card-info">
               <h4>{movie.title}</h4>
-              <span>⭐ {movie.vote_average?.toFixed(1)}</span>
+              {movie.vote_average && (
+                <span>⭐ {movie.vote_average.toFixed(1)}</span>
+              )}
               <p>{movie.overview?.slice(0, 90)}…</p>
 
               <div className="providers">
-                {movie.release_date &&
-                  new Date(movie.release_date) < new Date() && (
-                    <>
-                      <a
-                        href={`https://www.netflix.com/search?q=${movie.title}`}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <img src="/netflix.png" alt="Netflix" />
-                      </a>
+                <a
+                  href={`https://www.netflix.com/search?q=${movie.title}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img src="/netflix.png" alt="Netflix" />
+                </a>
 
-                      <a
-                        href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${movie.title}`}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <img src="/prime.png" alt="Prime" />
-                      </a>
-                    </>
-                  )}
+                <a
+                  href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${movie.title}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img src="/prime.png" alt="Prime" />
+                </a>
 
                 {movie.release_date &&
                   new Date(movie.release_date) >
@@ -201,10 +202,7 @@ export default function App() {
       {/* MOVIE MODAL */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
-          <div
-            className="modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <img
               src={
                 selected.poster_path
@@ -224,15 +222,12 @@ export default function App() {
       {/* WATCHLIST MODAL */}
       {showWatchlist && (
         <div className="modal" onClick={() => setShowWatchlist(false)}>
-          <div
-            className="modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <h2>Your Watchlist</h2>
             {watchlist.length === 0 && <p>No movies yet.</p>}
             <div className="row">
-              {watchlist.map((m) => (
-                <div className="card" key={m.id}>
+              {watchlist.map((m, i) => (
+                <div className="card" key={m.id || m.title || i}>
                   <img
                     src={
                       m.poster_path
