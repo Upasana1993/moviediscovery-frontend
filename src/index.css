@@ -249,3 +249,40 @@ h2 {
     border-radius: 0;
   }
 }
+/* ---------------- WATCHLIST (MOBILE SAFE) ---------------- */
+.watchlist-modal {
+  max-width: 95vw;
+}
+
+.watchlist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.watchlist-item img {
+  width: 60px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.watchlist-item span {
+  font-size: 14px;
+}
+
+/* ---------------- BACKEND WAKEUP TOAST ---------------- */
+.wakeup-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  z-index: 100;
+}
