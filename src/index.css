@@ -11,3 +11,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.card {
+  min-width: 160px;
+  scroll-snap-align: start;
+}
+
+.modal-box {
+  max-width: 90vw;
+}
