@@ -25,8 +25,15 @@ export default function App() {
   useEffect(() => {
     if (!API) return;
 
-    fetch(`${API}/trending`).then((r) => r.json()).then(setTrending);
-    fetch(`${API}/latest`).then((r) => r.json()).then(setLatest);
+    fetch(`${API}/trending`)
+      .then((r) => r.json())
+      .then(setTrending)
+      .catch(console.error);
+
+    fetch(`${API}/latest`)
+      .then((r) => r.json())
+      .then(setLatest)
+      .catch(console.error);
   }, []);
 
   /* ---------------- ASK AI ---------------- */
@@ -45,7 +52,8 @@ export default function App() {
 
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
-    } catch {
+    } catch (e) {
+      console.error(e);
       alert("AI failed. Try again.");
     } finally {
       setLoadingAI(false);
@@ -75,6 +83,7 @@ export default function App() {
             key={movie.id}
             onClick={() => setSelected(movie)}
           >
+            {/* WATCHLIST HEART */}
             <button
               className={`heart ${isInWatchlist(movie) ? "active" : ""}`}
               onClick={(e) => {
@@ -85,18 +94,23 @@ export default function App() {
               {isInWatchlist(movie) ? "❤️" : "🤍"}
             </button>
 
+            {/* POSTER */}
             <img
               src={movie.poster || "/placeholder.png"}
               alt={movie.title}
             />
 
+            {/* INFO */}
             <div className="card-info">
               <h4>{movie.title}</h4>
+
               {movie.rating && (
                 <span>⭐ {movie.rating.toFixed(1)}</span>
               )}
+
               <p>{movie.overview?.slice(0, 90)}…</p>
 
+              {/* PROVIDERS */}
               <div className="providers">
                 {movie.providers?.netflix && (
                   <a
@@ -104,7 +118,7 @@ export default function App() {
                       movie.title
                     )}`}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noreferrer noopener"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <img src="/netflix.png" alt="Netflix" />
@@ -117,7 +131,7 @@ export default function App() {
                       movie.title
                     )}`}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noreferrer noopener"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <img src="/prime.png" alt="Prime Video" />
@@ -130,7 +144,7 @@ export default function App() {
                       movie.title
                     )}`}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noreferrer noopener"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <img src="/bms.png" alt="BookMyShow" />
@@ -146,13 +160,16 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* NAV */}
       <nav className="nav">
         <div className="logo">🎬 MovieDiscovery</div>
         <div>❤️ Watchlist ({watchlist.length})</div>
       </nav>
 
+      {/* AI SEARCH */}
       <section className="ai">
         <h1>AI Movie Recommender</h1>
+
         <div className="search">
           <input
             value={prompt}
@@ -173,6 +190,7 @@ export default function App() {
         </div>
       </section>
 
+      {/* ROWS */}
       {aiPicks.length > 0 && (
         <Row title="🎯 AI Picks" movies={aiPicks} />
       )}
@@ -182,7 +200,10 @@ export default function App() {
       {/* MOVIE MODAL */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-box"
+            onClick={(e) => e.stopPropagation()}
+          >
             <img
               src={selected.poster || "/placeholder.png"}
               alt={selected.title}
