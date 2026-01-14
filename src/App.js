@@ -40,27 +40,29 @@ export default function App() {
 
   /* ---------------- ASK AI ---------------- */
   const askAI = async () => {
-    if (!prompt.trim() || !API) return;
+  if (!prompt.trim() || !API) return;
 
-    setLoadingAI(true);
-    setAiPicks([]);
+  setLoadingAI(true);
+  setAiPicks([]);
 
-    try {
-      const res = await fetch(`${API}/recommend`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
+  try {
+    const res = await fetch(`${API}/recommend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
 
-      const data = await res.json();
-      setAiPicks(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error(e);
-      alert("AI failed. Please try again.");
-    } finally {
-      setLoadingAI(false);
-    }
-  };
+    const data = await res.json();
+    console.log("AI response:", data);
+
+    setAiPicks(Array.isArray(data) ? data : []);
+  } catch (e) {
+    console.error(e);
+    alert("AI failed. Please try again.");
+  } finally {
+    setLoadingAI(false);
+  }
+};
 
   /* ---------------- WATCHLIST ---------------- */
   const toggleWatchlist = (movie) => {
