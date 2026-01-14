@@ -133,7 +133,7 @@ export default function App() {
                   rel="noreferrer noopener"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <img src="/prime.png" alt="Prime" />
+                  <img src="/Prime.png" alt="Prime" />
                 </a>
 
                 {movie.release_date &&
