@@ -286,3 +286,28 @@ h2 {
   font-size: 13px;
   z-index: 100;
 }
+.wake-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: #eee;
+  padding: 10px 14px;
+  border-radius: 999px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 100;
+  font-size: 13px;
+}
+
+.wake-banner button {
+  background: #22c55e;
+  border: none;
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
