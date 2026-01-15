@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./App.css";
+import "./index.css";
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -21,38 +21,31 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [showWatchlist, setShowWatchlist] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
-
   const [backendAwake, setBackendAwake] = useState(false);
   const [showWakeBanner, setShowWakeBanner] = useState(true);
 
-  /* ---------------- WAKE BACKEND ---------------- */
+  /* -------- WAKE BACKEND -------- */
   const wakeBackend = async () => {
     try {
       const t = await fetch(`${API}/trending`);
       const trendingData = await t.json();
-
-      if (!Array.isArray(trendingData)) return;
-
-      setTrending(trendingData);
-
-      const l = await fetch(`${API}/latest`);
-      setLatest(await l.json());
-
-      setBackendAwake(true);
-      setShowWakeBanner(false);
-    } catch {
-      // backend still sleeping
-    }
+      if (Array.isArray(trendingData)) {
+        setTrending(trendingData);
+        const l = await fetch(`${API}/latest`);
+        setLatest(await l.json());
+        setBackendAwake(true);
+        setShowWakeBanner(false);
+      }
+    } catch {}
   };
 
   useEffect(() => {
     if (API) wakeBackend();
   }, []);
 
-  /* ---------------- ASK AI ---------------- */
+  /* -------- ASK AI -------- */
   const askAI = async () => {
     if (!prompt.trim()) return;
-
     setLoadingAI(true);
     setAiPicks([]);
 
@@ -62,17 +55,16 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
-
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
     } catch {
-      alert("Backend is waking up. Please try again.");
+      alert("Backend waking up. Try again.");
     } finally {
       setLoadingAI(false);
     }
   };
 
-  /* ---------------- WATCHLIST ---------------- */
+  /* -------- WATCHLIST -------- */
   const toggleWatchlist = (movie) => {
     setWatchlist((prev) =>
       prev.some((m) => m.id === movie.id)
@@ -84,15 +76,15 @@ export default function App() {
   const isInWatchlist = (movie) =>
     watchlist.some((m) => m.id === movie.id);
 
-  /* ---------------- ROW ---------------- */
+  /* -------- ROW -------- */
   const Row = ({ title, movies }) => (
     <>
       <h2>{title}</h2>
       <div className="row">
         {movies.map((movie) => (
           <div
-            key={movie.id}
             className="card"
+            key={movie.id}
             onClick={() => setSelected(movie)}
           >
             <button
@@ -154,7 +146,7 @@ export default function App() {
       {/* WAKE BANNER */}
       {showWakeBanner && (
         <div className="wake-banner">
-          <span>Backend sleeping. First load may take ~30 seconds.</span>
+          <span>Backend sleeping. First load may take ~30s.</span>
           <button onClick={wakeBackend}>Wake up</button>
         </div>
       )}
@@ -168,12 +160,17 @@ export default function App() {
             placeholder="Ask AI for movie recommendations"
             style={{ background: "#fff", color: "#000" }}
           />
-          <button
-            onClick={askAI}
-            disabled={!backendAwake || loadingAI}
-          >
+          <button onClick={askAI} disabled={!backendAwake || loadingAI}>
             {loadingAI ? "Thinking…" : "Ask AI"}
           </button>
+        </div>
+
+        <div className="chips">
+          {PROMPTS.map((p) => (
+            <button key={p} onClick={() => setPrompt(p)}>
+              {p}
+            </button>
+          ))}
         </div>
       </section>
 
@@ -185,7 +182,9 @@ export default function App() {
       {showWatchlist && (
         <div className="modal" onClick={() => setShowWatchlist(false)}>
           <div className="modal-box watchlist-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close" onClick={() => setShowWatchlist(false)}>✕</button>
             <h2>My Watchlist</h2>
+
             <div className="watchlist-grid">
               {watchlist.map((m) => (
                 <div
@@ -208,36 +207,40 @@ export default function App() {
       {/* MOVIE MODAL */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
-          <div className="modal-box movie-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-box movie-hero" onClick={(e) => e.stopPropagation()}>
+            <button className="close" onClick={() => setSelected(null)}>✕</button>
+
             <img
               src={selected.poster || "/placeholder.png"}
               alt={selected.title}
-              className="movie-modal-poster"
+              className="hero-poster"
             />
-            <h2>{selected.title}</h2>
-            {selected.rating && (
-              <div className="movie-rating">⭐ {selected.rating.toFixed(1)}</div>
-            )}
-            <p className="movie-overview">{selected.overview}</p>
-            <div className="providers">
-              {selected.providers?.netflix && (
-                <a
-                  href={`https://www.netflix.com/search?q=${encodeURIComponent(selected.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img src="/netflix.png" alt="Netflix" />
-                </a>
-              )}
-              {selected.providers?.prime && (
-                <a
-                  href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(selected.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img src="/prime.png" alt="Prime" />
-                </a>
-              )}
+
+            <div className="hero-content">
+              <h2>{selected.title}</h2>
+              {selected.rating && <div className="movie-rating">⭐ {selected.rating.toFixed(1)}</div>}
+              <p className="movie-overview">{selected.overview}</p>
+
+              <div className="providers">
+                {selected.providers?.netflix && (
+                  <a
+                    href={`https://www.netflix.com/search?q=${encodeURIComponent(selected.title)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img src="/netflix.png" alt="Netflix" />
+                  </a>
+                )}
+                {selected.providers?.prime && (
+                  <a
+                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(selected.title)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img src="/prime.png" alt="Prime" />
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>
