@@ -19,22 +19,34 @@ export default function App() {
   const [latest, setLatest] = useState([]);
   const [watchlist, setWatchlist] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [showWatchlist, setShowWatchlist] = useState(false); // ✅ ADDED
+  const [showWatchlist, setShowWatchlist] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
 
-  /* ---------------- LOAD DATA ---------------- */
+  const [backendAwake, setBackendAwake] = useState(false);
+  const [showWakeBanner, setShowWakeBanner] = useState(true);
+
+  /* ---------------- WAKE BACKEND ---------------- */
+  const wakeBackend = async () => {
+    try {
+      const t = await fetch(`${API}/trending`);
+      const trendingData = await t.json();
+
+      if (!Array.isArray(trendingData)) return;
+
+      setTrending(trendingData);
+
+      const l = await fetch(`${API}/latest`);
+      setLatest(await l.json());
+
+      setBackendAwake(true);
+      setShowWakeBanner(false);
+    } catch {
+      // backend still sleeping
+    }
+  };
+
   useEffect(() => {
-    if (!API) return;
-
-    fetch(`${API}/trending`)
-      .then((r) => r.json())
-      .then(setTrending)
-      .catch(console.error);
-
-    fetch(`${API}/latest`)
-      .then((r) => r.json())
-      .then(setLatest)
-      .catch(console.error);
+    if (API) wakeBackend();
   }, []);
 
   /* ---------------- ASK AI ---------------- */
@@ -53,9 +65,8 @@ export default function App() {
 
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
-    } catch (e) {
-      console.error(e);
-      alert("AI failed. Try again.");
+    } catch {
+      alert("Backend is waking up. Please try again.");
     } finally {
       setLoadingAI(false);
     }
@@ -73,19 +84,19 @@ export default function App() {
   const isInWatchlist = (movie) =>
     watchlist.some((m) => m.id === movie.id);
 
-  /* ---------------- MOVIE ROW ---------------- */
+  /* ---------------- ROW ---------------- */
   const Row = ({ title, movies }) => (
     <>
-      <h2 className="row-title">{title}</h2>
+      <h2>{title}</h2>
       <div className="row">
         {movies.map((movie) => (
           <div
-            className="card"
             key={movie.id}
+            className="card"
             onClick={() => setSelected(movie)}
           >
             <button
-              className={`heart ${isInWatchlist(movie) ? "active" : ""}`}
+              className="heart"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleWatchlist(movie);
@@ -94,57 +105,32 @@ export default function App() {
               {isInWatchlist(movie) ? "❤️" : "🤍"}
             </button>
 
-            <img
-              src={movie.poster || "/placeholder.png"}
-              alt={movie.title}
-            />
+            <img src={movie.poster || "/placeholder.png"} alt={movie.title} />
 
             <div className="card-info">
               <h4>{movie.title}</h4>
-
-              {movie.rating && (
-                <span>⭐ {movie.rating.toFixed(1)}</span>
-              )}
-
-              <p>{movie.overview?.slice(0, 90)}…</p>
+              {movie.rating && <span>⭐ {movie.rating.toFixed(1)}</span>}
+              <p>{movie.overview?.slice(0, 80)}…</p>
 
               <div className="providers">
                 {movie.providers?.netflix && (
                   <a
-                    href={`https://www.netflix.com/search?q=${encodeURIComponent(
-                      movie.title
-                    )}`}
+                    href={`https://www.netflix.com/search?q=${encodeURIComponent(movie.title)}`}
                     target="_blank"
-                    rel="noreferrer noopener"
+                    rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <img src="/netflix.png" alt="Netflix" />
                   </a>
                 )}
-
                 {movie.providers?.prime && (
                   <a
-                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(
-                      movie.title
-                    )}`}
+                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(movie.title)}`}
                     target="_blank"
-                    rel="noreferrer noopener"
+                    rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <img src="/prime.png" alt="Prime Video" />
-                  </a>
-                )}
-
-                {movie.providers?.bookmyshow && (
-                  <a
-                    href={`https://in.bookmyshow.com/explore/movies?q=${encodeURIComponent(
-                      movie.title
-                    )}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <img src="/bms.png" alt="BookMyShow" />
+                    <img src="/prime.png" alt="Prime" />
                   </a>
                 )}
               </div>
@@ -158,71 +144,63 @@ export default function App() {
   return (
     <div className="app">
       {/* NAV */}
-      <nav className="nav">
-        <div className="logo">🎬 MovieDiscovery</div>
-        <div
-          style={{ cursor: "pointer" }}
-          onClick={() => setShowWatchlist(true)}   // ✅ CLICKABLE
-        >
+      <nav>
+        <span>🎬 MovieDiscovery</span>
+        <button onClick={() => setShowWatchlist(true)}>
           ❤️ Watchlist ({watchlist.length})
-        </div>
+        </button>
       </nav>
+
+      {/* WAKE BANNER */}
+      {showWakeBanner && (
+        <div className="wake-banner">
+          <span>Backend sleeping. First load may take ~30 seconds.</span>
+          <button onClick={wakeBackend}>Wake up</button>
+        </div>
+      )}
 
       {/* AI SEARCH */}
       <section className="ai">
-        <h1>AI Movie Recommender</h1>
-
         <div className="search">
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g. Picnic movies with friends"
+            placeholder="Ask AI for movie recommendations"
+            style={{ background: "#fff", color: "#000" }}
           />
-          <button onClick={askAI} disabled={loadingAI}>
-            {loadingAI ? "Thinking..." : "Ask AI"}
+          <button
+            onClick={askAI}
+            disabled={!backendAwake || loadingAI}
+          >
+            {loadingAI ? "Thinking…" : "Ask AI"}
           </button>
-        </div>
-
-        <div className="chips">
-          {PROMPTS.map((p) => (
-            <button key={p} onClick={() => setPrompt(p)}>
-              {p}
-            </button>
-          ))}
         </div>
       </section>
 
       {aiPicks.length > 0 && <Row title="🎯 AI Picks" movies={aiPicks} />}
-      <Row title="🔥 Trending" movies={trending} />
-      <Row title="🆕 Latest Releases" movies={latest} />
+      {trending.length > 0 && <Row title="🔥 Trending" movies={trending} />}
+      {latest.length > 0 && <Row title="🆕 Latest" movies={latest} />}
 
-      {/* WATCHLIST MODAL ✅ */}
+      {/* WATCHLIST MODAL */}
       {showWatchlist && (
         <div className="modal" onClick={() => setShowWatchlist(false)}>
-          <div
-            className="modal-box watchlist-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>Your Watchlist</h2>
-
-            {watchlist.length === 0 && <p>No movies yet.</p>}
-
-            {watchlist.map((m) => (
-              <div
-                key={m.id}
-                className="watchlist-item"
-                onClick={() => {
-                  setSelected(m);
-                  setShowWatchlist(false);
-                }}
-              >
-                <img
-                  src={m.poster || "/placeholder.png"}
-                  alt={m.title}
-                />
-                <span>{m.title}</span>
-              </div>
-            ))}
+          <div className="modal-box watchlist-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>My Watchlist</h2>
+            <div className="watchlist-grid">
+              {watchlist.map((m) => (
+                <div
+                  key={m.id}
+                  className="watchlist-card"
+                  onClick={() => {
+                    setSelected(m);
+                    setShowWatchlist(false);
+                  }}
+                >
+                  <img src={m.poster || "/placeholder.png"} alt={m.title} />
+                  <span>{m.title}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -230,17 +208,36 @@ export default function App() {
       {/* MOVIE MODAL */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
-          <div
-            className="modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-box movie-modal" onClick={(e) => e.stopPropagation()}>
             <img
               src={selected.poster || "/placeholder.png"}
               alt={selected.title}
+              className="movie-modal-poster"
             />
-            <div>
-              <h2>{selected.title}</h2>
-              <p>{selected.overview}</p>
+            <h2>{selected.title}</h2>
+            {selected.rating && (
+              <div className="movie-rating">⭐ {selected.rating.toFixed(1)}</div>
+            )}
+            <p className="movie-overview">{selected.overview}</p>
+            <div className="providers">
+              {selected.providers?.netflix && (
+                <a
+                  href={`https://www.netflix.com/search?q=${encodeURIComponent(selected.title)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img src="/netflix.png" alt="Netflix" />
+                </a>
+              )}
+              {selected.providers?.prime && (
+                <a
+                  href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(selected.title)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img src="/prime.png" alt="Prime" />
+                </a>
+              )}
             </div>
           </div>
         </div>
