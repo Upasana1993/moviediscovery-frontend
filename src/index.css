@@ -51,11 +51,6 @@ nav button {
   padding: 20px 16px;
 }
 
-.ai h1 {
-  font-size: 22px;
-  margin-bottom: 12px;
-}
-
 .search {
   display: flex;
   gap: 8px;
@@ -67,9 +62,6 @@ nav button {
   padding: 10px 12px;
   border-radius: 8px;
   border: none;
-  outline: none;
-  background: #1e1e1e;
-  color: #fff;
 }
 
 .search button {
@@ -87,7 +79,6 @@ nav button {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 8px;
 }
 
 .chips button {
@@ -97,8 +88,6 @@ nav button {
   padding: 6px 12px;
   border-radius: 16px;
   font-size: 12px;
-  white-space: nowrap;
-  cursor: pointer;
 }
 
 /* ---------------- ROW ---------------- */
@@ -112,7 +101,6 @@ h2 {
   gap: 14px;
   padding: 8px 16px 16px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
 }
 
 .row::-webkit-scrollbar {
@@ -127,20 +115,12 @@ h2 {
   min-width: 160px;
   max-width: 160px;
   overflow: hidden;
-  scroll-snap-align: start;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.card:hover {
-  transform: scale(1.03);
 }
 
 .card img {
   width: 100%;
   height: 230px;
   object-fit: cover;
-  display: block;
 }
 
 /* ---------------- HEART ---------------- */
@@ -149,13 +129,11 @@ h2 {
   top: 8px;
   right: 8px;
   background: rgba(0, 0, 0, 0.6);
-  border: none;
   border-radius: 50%;
   width: 32px;
   height: 32px;
-  color: #fff;
+  border: none;
   cursor: pointer;
-  font-size: 14px;
 }
 
 /* ---------------- CARD INFO ---------------- */
@@ -165,7 +143,6 @@ h2 {
 
 .card-info h4 {
   font-size: 14px;
-  margin-bottom: 4px;
 }
 
 .card-info span {
@@ -176,7 +153,6 @@ h2 {
 .card-info p {
   font-size: 12px;
   color: #aaa;
-  margin-top: 6px;
 }
 
 /* ---------------- PROVIDERS ---------------- */
@@ -189,7 +165,6 @@ h2 {
 .providers img {
   width: 22px;
   height: 22px;
-  cursor: pointer;
 }
 
 /* ---------------- MODAL ---------------- */
@@ -197,95 +172,54 @@ h2 {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
-  z-index: 50;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  z-index: 50;
 }
 
 .modal-box {
   background: #181818;
   border-radius: 12px;
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow-y: auto;
   padding: 16px;
+  max-width: 90vw;
 }
 
-.modal-box img {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-
-.modal-box h2 {
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-
-.modal-box p {
-  font-size: 14px;
-  color: #ccc;
-}
-
-/* ---------------- MOBILE FIXES ---------------- */
-@media (max-width: 600px) {
-  .card {
-    min-width: 140px;
-    max-width: 140px;
-  }
-
-  .card img {
-    height: 200px;
-  }
-
-  nav span {
-    font-size: 16px;
-  }
-
-  .modal-box {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-  }
-}
-/* ---------------- WATCHLIST (MOBILE SAFE) ---------------- */
-.watchlist-modal {
-  max-width: 95vw;
-}
-
+/* ---------------- WATCHLIST ---------------- */
 .watchlist-item {
   display: flex;
-  align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-  cursor: pointer;
 }
 
 .watchlist-item img {
   width: 60px;
   height: 90px;
-  object-fit: cover;
   border-radius: 6px;
+  object-fit: cover;
 }
 
-.watchlist-item span {
+/* ---------------- MOVIE MODAL ---------------- */
+.movie-modal {
+  max-width: 420px;
+}
+
+.movie-modal-poster {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.movie-rating {
+  color: #f5c518;
+  margin: 6px 0;
+}
+
+.movie-overview {
   font-size: 14px;
+  color: #ccc;
 }
 
-/* ---------------- BACKEND WAKEUP TOAST ---------------- */
-.wakeup-toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  z-index: 100;
-}
+/* ---------------- WAKE BANNER ---------------- */
 .wake-banner {
   position: fixed;
   bottom: 20px;
@@ -297,17 +231,14 @@ h2 {
   border-radius: 999px;
   display: flex;
   gap: 12px;
-  align-items: center;
-  z-index: 100;
   font-size: 13px;
+  z-index: 100;
 }
 
 .wake-banner button {
   background: #22c55e;
   border: none;
-  color: #000;
   padding: 6px 12px;
   border-radius: 999px;
   cursor: pointer;
-  font-weight: 600;
 }
