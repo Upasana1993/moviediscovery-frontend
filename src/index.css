@@ -209,3 +209,23 @@ h2 {
     font-size: 14px;
   }
 }
+.search input::placeholder {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 701px) {
+  .search input {
+    flex: 0 0 50%;
+  }
+}
+.search button {
+  background: #e50914;      /* Netflix-style red */
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
