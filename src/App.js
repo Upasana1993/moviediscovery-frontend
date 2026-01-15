@@ -19,6 +19,7 @@ export default function App() {
   const [latest, setLatest] = useState([]);
   const [watchlist, setWatchlist] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [showWatchlist, setShowWatchlist] = useState(false); // ✅ ADDED
   const [loadingAI, setLoadingAI] = useState(false);
 
   /* ---------------- LOAD DATA ---------------- */
@@ -83,7 +84,6 @@ export default function App() {
             key={movie.id}
             onClick={() => setSelected(movie)}
           >
-            {/* WATCHLIST HEART */}
             <button
               className={`heart ${isInWatchlist(movie) ? "active" : ""}`}
               onClick={(e) => {
@@ -94,13 +94,11 @@ export default function App() {
               {isInWatchlist(movie) ? "❤️" : "🤍"}
             </button>
 
-            {/* POSTER */}
             <img
               src={movie.poster || "/placeholder.png"}
               alt={movie.title}
             />
 
-            {/* INFO */}
             <div className="card-info">
               <h4>{movie.title}</h4>
 
@@ -110,7 +108,6 @@ export default function App() {
 
               <p>{movie.overview?.slice(0, 90)}…</p>
 
-              {/* PROVIDERS */}
               <div className="providers">
                 {movie.providers?.netflix && (
                   <a
@@ -163,7 +160,12 @@ export default function App() {
       {/* NAV */}
       <nav className="nav">
         <div className="logo">🎬 MovieDiscovery</div>
-        <div>❤️ Watchlist ({watchlist.length})</div>
+        <div
+          style={{ cursor: "pointer" }}
+          onClick={() => setShowWatchlist(true)}   // ✅ CLICKABLE
+        >
+          ❤️ Watchlist ({watchlist.length})
+        </div>
       </nav>
 
       {/* AI SEARCH */}
@@ -190,13 +192,9 @@ export default function App() {
         </div>
       </section>
 
-      {/* ROWS */}
-      {aiPicks.length > 0 && (
-        <Row title="🎯 AI Picks" movies={aiPicks} />
-      )}
+      {aiPicks.length > 0 && <Row title="🎯 AI Picks" movies={aiPicks} />}
       <Row title="🔥 Trending" movies={trending} />
       <Row title="🆕 Latest Releases" movies={latest} />
-
 
       {/* WATCHLIST MODAL ✅ */}
       {showWatchlist && (
