@@ -197,6 +197,38 @@ export default function App() {
       <Row title="🔥 Trending" movies={trending} />
       <Row title="🆕 Latest Releases" movies={latest} />
 
+
+      {/* WATCHLIST MODAL ✅ */}
+      {showWatchlist && (
+        <div className="modal" onClick={() => setShowWatchlist(false)}>
+          <div
+            className="modal-box watchlist-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Your Watchlist</h2>
+
+            {watchlist.length === 0 && <p>No movies yet.</p>}
+
+            {watchlist.map((m) => (
+              <div
+                key={m.id}
+                className="watchlist-item"
+                onClick={() => {
+                  setSelected(m);
+                  setShowWatchlist(false);
+                }}
+              >
+                <img
+                  src={m.poster || "/placeholder.png"}
+                  alt={m.title}
+                />
+                <span>{m.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* MOVIE MODAL */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
