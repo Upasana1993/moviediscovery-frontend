@@ -1,28 +1,26 @@
-/* ---------- RESET ---------- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+body {
   background: #0f0f0f;
   color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
 }
 
-/* ---------- APP ---------- */
 .app {
   min-height: 100vh;
   padding-bottom: 80px;
 }
 
-/* ---------- NAV ---------- */
+/* NAV */
 nav {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(15,15,15,0.9);
+  background: rgba(15, 15, 15, 0.9);
   backdrop-filter: blur(10px);
   padding: 14px 16px;
   display: flex;
@@ -30,49 +28,30 @@ nav {
   border-bottom: 1px solid #222;
 }
 
-/* ---------- SEARCH (FIXED MOBILE) ---------- */
+/* SEARCH */
 .search {
   display: flex;
   gap: 8px;
   padding: 16px;
 }
 
-.search input {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
-}
-
-.search button {
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: none;
-  background: #e50914;
-  color: #fff;
-  font-weight: 600;
-}
-
-/* ---------- CHIPS (RESTORED UI) ---------- */
 .chips {
   display: flex;
   gap: 8px;
-  padding: 0 16px 12px;
+  padding: 0 16px;
   overflow-x: auto;
 }
 
 .chips button {
   background: #1f1f1f;
-  color: #ccc;
   border: none;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 16px;
+  color: #ccc;
+  cursor: pointer;
 }
 
-/* ---------- ROW ---------- */
+/* ROW */
 h2 {
   padding: 12px 16px;
 }
@@ -84,13 +63,14 @@ h2 {
   overflow-x: auto;
 }
 
-/* ---------- CARD ---------- */
+/* CARD */
 .card {
   min-width: 160px;
   background: #181818;
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
+  cursor: pointer;
 }
 
 .card img {
@@ -99,7 +79,15 @@ h2 {
   object-fit: cover;
 }
 
-/* ---------- HEART ---------- */
+.card-info {
+  padding: 10px;
+}
+
+.card-info p {
+  color: #aaa;
+  font-size: 12px;
+}
+
 .heart {
   position: absolute;
   top: 8px;
@@ -111,16 +99,13 @@ h2 {
   height: 32px;
 }
 
-/* ---------- CARD INFO ---------- */
-.card-info {
-  padding: 10px;
+/* PROVIDERS */
+.providers {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-.card-info span {
-  color: #f5c518;
-}
-
-/* ---------- PROVIDERS (FIXED ICON DISTORTION) ---------- */
 .providers img {
   width: 12px;
   height: 12px;
@@ -128,14 +113,14 @@ h2 {
   display: block;
 }
 
-/* ---------- MODAL ---------- */
+/* MODAL */
 .modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.85);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 50;
 }
 
@@ -143,29 +128,27 @@ h2 {
   background: #121212;
   border-radius: 16px;
   padding: 20px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
 }
 
 .close {
   position: absolute;
   top: 12px;
-  right: 12px;
+  right: 14px;
   background: none;
   border: none;
   color: #fff;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
 }
 
-/* ---------- WATCHLIST ---------- */
-.watchlist-modal {
-  max-width: 800px;
-  width: 90vw;
-}
-
+/* WATCHLIST */
 .watchlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 14px;
 }
 
@@ -176,7 +159,7 @@ h2 {
   border-radius: 10px;
 }
 
-/* ---------- MOVIE HERO ---------- */
+/* MOVIE HERO */
 .movie-hero {
   display: flex;
   gap: 20px;
@@ -186,7 +169,6 @@ h2 {
 .hero-poster {
   width: 260px;
   border-radius: 12px;
-  object-fit: cover;
 }
 
 .hero-content {
@@ -195,42 +177,21 @@ h2 {
   gap: 10px;
 }
 
-.movie-rating {
-  color: #f5c518;
-}
-
 .movie-overview {
   color: #ccc;
-  line-height: 1.5;
+  font-size: 14px;
 }
 
-/* ---------- MOBILE ---------- */
+/* MOBILE */
 @media (max-width: 700px) {
   .movie-hero {
     flex-direction: column;
     align-items: center;
   }
-
   .hero-poster {
     width: 100%;
     max-width: 320px;
   }
-
-  .search {
-    flex-direction: column;
-  }
 }
 
-/* ---------- WAKE BANNER ---------- */
-.wake-banner {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #111;
-  padding: 10px 14px;
-  border-radius: 999px;
-  display: flex;
-  gap: 10px;
-  z-index: 100;
-}
+
