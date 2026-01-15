@@ -23,14 +23,34 @@ export default function App() {
   const [selected, setSelected] = useState(null);
 
   const [loadingAI, setLoadingAI] = useState(false);
-  const [wakingUp, setWakingUp] = useState(false);
 
-  /* ---------------- LOAD DATA ---------------- */
+  // 🔥 NEW STATES
+  const [backendAwake, setBackendAwake] = useState(false);
+  const [showWakeBanner, setShowWakeBanner] = useState(true);
+
+  /* ---------------- WAKE BACKEND ---------------- */
+  const wakeBackend = async () => {
+    try {
+      const res = await fetch(`${API}/trending`);
+      const data = await res.json();
+      setTrending(data);
+      setBackendAwake(true);
+      setShowWakeBanner(false);
+
+      // Load latest only after backend wakes
+      const latestRes = await fetch(`${API}/latest`);
+      setLatest(await latestRes.json());
+    } catch {
+      // still sleeping — do nothing
+    }
+  };
+
+  /* ---------------- INITIAL LOAD ---------------- */
   useEffect(() => {
     if (!API) return;
 
-    fetch(`${API}/trending`).then(r => r.json()).then(setTrending);
-    fetch(`${API}/latest`).then(r => r.json()).then(setLatest);
+    // Attempt backend wake immediately
+    wakeBackend();
   }, []);
 
   /* ---------------- ASK AI ---------------- */
@@ -39,10 +59,6 @@ export default function App() {
 
     setLoadingAI(true);
     setAiPicks([]);
-
-    const wakeupTimer = setTimeout(() => {
-      setWakingUp(true);
-    }, 3000);
 
     try {
       const res = await fetch(`${API}/recommend`, {
@@ -56,8 +72,6 @@ export default function App() {
     } catch {
       alert("Backend is waking up. Please try again.");
     } finally {
-      clearTimeout(wakeupTimer);
-      setWakingUp(false);
       setLoadingAI(false);
     }
   };
@@ -131,17 +145,6 @@ export default function App() {
                     <img src="/prime.png" alt="Prime Video" />
                   </a>
                 )}
-
-                {movie.providers?.bookmyshow && (
-                  <a
-                    href={`https://in.bookmyshow.com/explore/movies?q=${encodeURIComponent(movie.title)}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <img src="/bms.png" alt="BookMyShow" />
-                  </a>
-                )}
               </div>
             </div>
           </div>
@@ -155,13 +158,21 @@ export default function App() {
       {/* NAV */}
       <nav className="nav">
         <div className="logo">🎬 MovieDiscovery</div>
-        <button
-          className="watchlist-btn"
-          onClick={() => setShowWatchlist(true)}
-        >
+        <button onClick={() => setShowWatchlist(true)}>
           ❤️ Watchlist ({watchlist.length})
         </button>
       </nav>
+
+      {/* 🔥 WAKE SERVER BANNER */}
+      {showWakeBanner && (
+        <div className="wake-banner">
+          <span>
+            Frontend preview only. Please wake servers to enable backend
+            functionality.
+          </span>
+          <button onClick={wakeBackend}>Wake up servers</button>
+        </div>
+      )}
 
       {/* AI SEARCH */}
       <section className="ai">
@@ -169,67 +180,39 @@ export default function App() {
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g. Picnic movies with friends"
+            placeholder="Ask AI for movie recommendations"
             style={{ background: "#fff", color: "#000" }}
           />
-          <button onClick={askAI} disabled={loadingAI}>
+          <button onClick={askAI} disabled={!backendAwake || loadingAI}>
             {loadingAI ? "Thinking..." : "Ask AI"}
           </button>
-        </div>
-
-        <div className="chips">
-          {PROMPTS.map((p) => (
-            <button key={p} onClick={() => setPrompt(p)}>
-              {p}
-            </button>
-          ))}
         </div>
       </section>
 
       {aiPicks.length > 0 && <Row title="🎯 AI Picks" movies={aiPicks} />}
-      <Row title="🔥 Trending" movies={trending} />
-      <Row title="🆕 Latest Releases" movies={latest} />
-
-      {/* MOVIE MODAL */}
-      {selected && (
-        <div className="modal" onClick={() => setSelected(null)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <img src={selected.poster || "/placeholder.png"} />
-            <h2>{selected.title}</h2>
-            <p>{selected.overview}</p>
-          </div>
-        </div>
-      )}
+      {trending.length > 0 && <Row title="🔥 Trending" movies={trending} />}
+      {latest.length > 0 && <Row title="🆕 Latest" movies={latest} />}
 
       {/* WATCHLIST MODAL */}
       {showWatchlist && (
         <div className="modal" onClick={() => setShowWatchlist(false)}>
-          <div className="modal-box watchlist-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <h2>Your Watchlist</h2>
-
-            {watchlist.length === 0 && <p>No movies yet.</p>}
-
             {watchlist.map((m) => (
-              <div
-                key={m.id}
-                className="watchlist-item"
-                onClick={() => {
-                  setSelected(m);
-                  setShowWatchlist(false);
-                }}
-              >
-                <img src={m.poster || "/placeholder.png"} />
-                <span>{m.title}</span>
-              </div>
+              <p key={m.id}>{m.title}</p>
             ))}
           </div>
         </div>
       )}
 
-      {/* WAKEUP TOAST */}
-      {wakingUp && (
-        <div className="wakeup-toast">
-          ⏳ Waking up the server… first request may take a moment
+      {/* MOVIE MODAL */}
+      {selected && (
+        <div className="modal" onClick={() => setSelected(null)}>
+          <div className="modal-box">
+            <img src={selected.poster} />
+            <h2>{selected.title}</h2>
+            <p>{selected.overview}</p>
+          </div>
         </div>
       )}
     </div>
