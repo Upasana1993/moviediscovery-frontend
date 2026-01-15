@@ -29,23 +29,22 @@ export default function App() {
   /* ---------------- WAKE BACKEND ---------------- */
   const wakeBackend = async () => {
     try {
-      const res = await fetch(`${API}/trending`);
-      const data = await res.json();
-      setTrending(data);
+      const t = await fetch(`${API}/trending`);
+      const trendingData = await t.json();
+      setTrending(trendingData);
+
+      const l = await fetch(`${API}/latest`);
+      setLatest(await l.json());
+
       setBackendAwake(true);
       setShowWakeBanner(false);
-
-      const latestRes = await fetch(`${API}/latest`);
-      setLatest(await latestRes.json());
     } catch {
       // backend still sleeping
     }
   };
 
-  /* ---------------- INITIAL LOAD ---------------- */
   useEffect(() => {
-    if (!API) return;
-    wakeBackend();
+    if (API) wakeBackend();
   }, []);
 
   /* ---------------- ASK AI ---------------- */
@@ -65,7 +64,7 @@ export default function App() {
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
     } catch {
-      alert("Backend is waking up. Please try again.");
+      alert("Backend waking up. Try again in a few seconds.");
     } finally {
       setLoadingAI(false);
     }
@@ -83,7 +82,7 @@ export default function App() {
   const isInWatchlist = (movie) =>
     watchlist.some((m) => m.id === movie.id);
 
-  /* ---------------- MOVIE ROW ---------------- */
+  /* ---------------- ROW ---------------- */
   const Row = ({ title, movies }) => (
     <>
       <h2>{title}</h2>
@@ -111,50 +110,28 @@ export default function App() {
 
             <div className="card-info">
               <h4>{movie.title}</h4>
-
-              {movie.rating && (
-                <span>⭐ {movie.rating.toFixed(1)}</span>
-              )}
-
-              <p>{movie.overview?.slice(0, 90)}…</p>
+              {movie.rating && <span>⭐ {movie.rating.toFixed(1)}</span>}
+              <p>{movie.overview?.slice(0, 80)}…</p>
 
               <div className="providers">
                 {movie.providers?.netflix && (
                   <a
-                    href={`https://www.netflix.com/search?q=${encodeURIComponent(
-                      movie.title
-                    )}`}
+                    href={`https://www.netflix.com/search?q=${encodeURIComponent(movie.title)}`}
                     target="_blank"
-                    rel="noreferrer noopener"
+                    rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <img src="/netflix.png" alt="Netflix" />
                   </a>
                 )}
-
                 {movie.providers?.prime && (
                   <a
-                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(
-                      movie.title
-                    )}`}
+                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(movie.title)}`}
                     target="_blank"
-                    rel="noreferrer noopener"
+                    rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <img src="/prime.png" alt="Prime Video" />
-                  </a>
-                )}
-
-                {movie.providers?.bookmyshow && (
-                  <a
-                    href={`https://in.bookmyshow.com/explore/movies?q=${encodeURIComponent(
-                      movie.title
-                    )}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <img src="/bms.png" alt="BookMyShow" />
+                    <img src="/prime.png" alt="Prime" />
                   </a>
                 )}
               </div>
@@ -167,7 +144,6 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* NAV */}
       <nav>
         <span>🎬 MovieDiscovery</span>
         <button onClick={() => setShowWatchlist(true)}>
@@ -175,18 +151,13 @@ export default function App() {
         </button>
       </nav>
 
-      {/* WAKE SERVER BANNER */}
       {showWakeBanner && (
         <div className="wake-banner">
-          <span>
-            Frontend preview only. Please wake servers to enable backend
-            functionality.
-          </span>
-          <button onClick={wakeBackend}>Wake up servers</button>
+          <span>Backend sleeping. Wake servers to load movies.</span>
+          <button onClick={wakeBackend}>Wake up</button>
         </div>
       )}
 
-      {/* AI SEARCH */}
       <section className="ai">
         <div className="search">
           <input
@@ -196,16 +167,8 @@ export default function App() {
             style={{ background: "#fff", color: "#000" }}
           />
           <button onClick={askAI} disabled={!backendAwake || loadingAI}>
-            {loadingAI ? "Thinking..." : "Ask AI"}
+            {loadingAI ? "Thinking…" : "Ask AI"}
           </button>
-        </div>
-
-        <div className="chips">
-          {PROMPTS.map((p) => (
-            <button key={p} onClick={() => setPrompt(p)}>
-              {p}
-            </button>
-          ))}
         </div>
       </section>
 
@@ -233,10 +196,7 @@ export default function App() {
                   setShowWatchlist(false);
                 }}
               >
-                <img
-                  src={m.poster || "/placeholder.png"}
-                  alt={m.title}
-                />
+                <img src={m.poster || "/placeholder.png"} alt={m.title} />
                 <span>{m.title}</span>
               </div>
             ))}
@@ -244,7 +204,7 @@ export default function App() {
         </div>
       )}
 
-      {/* MOVIE DETAILS MODAL */}
+      {/* MOVIE DETAILS MODAL (STACKED, MOBILE FIRST) */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
           <div
@@ -270,37 +230,20 @@ export default function App() {
             <div className="providers movie-providers">
               {selected.providers?.netflix && (
                 <a
-                  href={`https://www.netflix.com/search?q=${encodeURIComponent(
-                    selected.title
-                  )}`}
+                  href={`https://www.netflix.com/search?q=${encodeURIComponent(selected.title)}`}
                   target="_blank"
-                  rel="noreferrer noopener"
+                  rel="noreferrer"
                 >
                   <img src="/netflix.png" alt="Netflix" />
                 </a>
               )}
-
               {selected.providers?.prime && (
                 <a
-                  href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(
-                    selected.title
-                  )}`}
+                  href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(selected.title)}`}
                   target="_blank"
-                  rel="noreferrer noopener"
+                  rel="noreferrer"
                 >
-                  <img src="/prime.png" alt="Prime Video" />
-                </a>
-              )}
-
-              {selected.providers?.bookmyshow && (
-                <a
-                  href={`https://in.bookmyshow.com/explore/movies?q=${encodeURIComponent(
-                    selected.title
-                  )}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  <img src="/bms.png" alt="BookMyShow" />
+                  <img src="/prime.png" alt="Prime" />
                 </a>
               )}
             </div>
