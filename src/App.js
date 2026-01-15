@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./App.css";
+import "./index.css";
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -24,31 +24,28 @@ export default function App() {
   const [backendAwake, setBackendAwake] = useState(false);
   const [showWakeBanner, setShowWakeBanner] = useState(true);
 
-  /* ---------- WAKE BACKEND ---------- */
+  /* -------- WAKE BACKEND -------- */
   const wakeBackend = async () => {
     try {
       const t = await fetch(`${API}/trending`);
       const trendingData = await t.json();
-      setTrending(trendingData);
-
-      const l = await fetch(`${API}/latest`);
-      setLatest(await l.json());
-
-      setBackendAwake(true);
-      setShowWakeBanner(false);
-    } catch {
-      // still sleeping
-    }
+      if (Array.isArray(trendingData)) {
+        setTrending(trendingData);
+        const l = await fetch(`${API}/latest`);
+        setLatest(await l.json());
+        setBackendAwake(true);
+        setShowWakeBanner(false);
+      }
+    } catch {}
   };
 
   useEffect(() => {
     if (API) wakeBackend();
   }, []);
 
-  /* ---------- ASK AI ---------- */
+  /* -------- ASK AI -------- */
   const askAI = async () => {
     if (!prompt.trim()) return;
-
     setLoadingAI(true);
     setAiPicks([]);
 
@@ -58,7 +55,6 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
-
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
     } catch {
@@ -68,7 +64,7 @@ export default function App() {
     }
   };
 
-  /* ---------- WATCHLIST ---------- */
+  /* -------- WATCHLIST -------- */
   const toggleWatchlist = (movie) => {
     setWatchlist((prev) =>
       prev.some((m) => m.id === movie.id)
@@ -80,19 +76,19 @@ export default function App() {
   const isInWatchlist = (movie) =>
     watchlist.some((m) => m.id === movie.id);
 
-  /* ---------- ROW ---------- */
+  /* -------- ROW -------- */
   const Row = ({ title, movies }) => (
     <>
       <h2>{title}</h2>
       <div className="row">
         {movies.map((movie) => (
           <div
-            key={movie.id}
             className="card"
+            key={movie.id}
             onClick={() => setSelected(movie)}
           >
             <button
-              className={`heart ${isInWatchlist(movie) ? "active" : ""}`}
+              className="heart"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleWatchlist(movie);
@@ -139,6 +135,7 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* NAV */}
       <nav>
         <span>🎬 MovieDiscovery</span>
         <button onClick={() => setShowWatchlist(true)}>
@@ -146,6 +143,7 @@ export default function App() {
         </button>
       </nav>
 
+      {/* WAKE BANNER */}
       {showWakeBanner && (
         <div className="wake-banner">
           <span>Backend sleeping. First load may take ~30s.</span>
@@ -153,16 +151,23 @@ export default function App() {
         </div>
       )}
 
+      {/* AI SEARCH */}
       <section className="ai">
         <div className="search">
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Ask AI for movie recommendations"
+            style={{ background: "#fff", color: "#000" }}
           />
-          <button onClick={askAI} disabled={!backendAwake || loadingAI}>
-            {loadingAI ? "Thinking…" : "Ask AI"}
-          </button>
+         <button
+  type="button"
+  onClick={askAI}
+  disabled={!backendAwake || loadingAI}
+>
+  {loadingAI ? "Thinking…" : "Ask AI"}
+</button>
+
         </div>
 
         <div className="chips">
