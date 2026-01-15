@@ -30,17 +30,14 @@ export default function App() {
   const wakeBackend = async () => {
     try {
       const t = await fetch(`${API}/trending`);
-      const trendingData = await t.json();
-      setTrending(trendingData);
+      setTrending(await t.json());
 
       const l = await fetch(`${API}/latest`);
       setLatest(await l.json());
 
       setBackendAwake(true);
       setShowWakeBanner(false);
-    } catch {
-      // backend still sleeping
-    }
+    } catch {}
   };
 
   useEffect(() => {
@@ -64,7 +61,7 @@ export default function App() {
       const data = await res.json();
       setAiPicks(Array.isArray(data.results) ? data.results : []);
     } catch {
-      alert("Backend waking up. Try again in a few seconds.");
+      alert("Backend waking up. Try again.");
     } finally {
       setLoadingAI(false);
     }
@@ -176,76 +173,84 @@ export default function App() {
       {trending.length > 0 && <Row title="🔥 Trending" movies={trending} />}
       {latest.length > 0 && <Row title="🆕 Latest" movies={latest} />}
 
-      {/* WATCHLIST MODAL */}
+      {/* WATCHLIST MODAL — GRID STYLE */}
       {showWatchlist && (
         <div className="modal" onClick={() => setShowWatchlist(false)}>
           <div
             className="modal-box watchlist-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2>Your Watchlist</h2>
+            <h2>My Watchlist</h2>
+            <p className="watchlist-count">
+              {watchlist.length} items saved
+            </p>
 
-            {watchlist.length === 0 && <p>No movies yet.</p>}
-
-            {watchlist.map((m) => (
-              <div
-                key={m.id}
-                className="watchlist-item"
-                onClick={() => {
-                  setSelected(m);
-                  setShowWatchlist(false);
-                }}
-              >
-                <img src={m.poster || "/placeholder.png"} alt={m.title} />
-                <span>{m.title}</span>
-              </div>
-            ))}
+            <div className="watchlist-grid">
+              {watchlist.map((m) => (
+                <div
+                  key={m.id}
+                  className="watchlist-card"
+                  onClick={() => {
+                    setSelected(m);
+                    setShowWatchlist(false);
+                  }}
+                >
+                  <img
+                    src={m.poster || "/placeholder.png"}
+                    alt={m.title}
+                  />
+                  <span>{m.title}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {/* MOVIE DETAILS MODAL (STACKED, MOBILE FIRST) */}
+      {/* MOVIE MODAL — NETFLIX STYLE */}
       {selected && (
         <div className="modal" onClick={() => setSelected(null)}>
           <div
-            className="modal-box movie-modal"
+            className="modal-box movie-hero"
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={selected.poster || "/placeholder.png"}
               alt={selected.title}
-              className="movie-modal-poster"
+              className="hero-poster"
             />
 
-            <h2>{selected.title}</h2>
+            <div className="hero-content">
+              <h2>{selected.title}</h2>
 
-            {selected.rating && (
-              <div className="movie-rating">
-                ⭐ {selected.rating.toFixed(1)}
+              {selected.rating && (
+                <div className="movie-rating">
+                  ⭐ {selected.rating.toFixed(1)}
+                </div>
+              )}
+
+              <p className="movie-overview">{selected.overview}</p>
+
+              <div className="providers">
+                {selected.providers?.netflix && (
+                  <a
+                    href={`https://www.netflix.com/search?q=${encodeURIComponent(selected.title)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img src="/netflix.png" alt="Netflix" />
+                  </a>
+                )}
+                {selected.providers?.prime && (
+                  <a
+                    href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(selected.title)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img src="/prime.png" alt="Prime" />
+                  </a>
+                )}
               </div>
-            )}
-
-            <p className="movie-overview">{selected.overview}</p>
-
-            <div className="providers movie-providers">
-              {selected.providers?.netflix && (
-                <a
-                  href={`https://www.netflix.com/search?q=${encodeURIComponent(selected.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img src="/netflix.png" alt="Netflix" />
-                </a>
-              )}
-              {selected.providers?.prime && (
-                <a
-                  href={`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(selected.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img src="/prime.png" alt="Prime" />
-                </a>
-              )}
             </div>
           </div>
         </div>
