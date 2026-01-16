@@ -251,17 +251,9 @@ export default function App() {
           </div>
         </div>
       )}
+        <Analytics />
     </div>
   );
 }
-
-export default function App() {
-  return (
-    <div className="app">
-      {/* your entire app */}
-
-      <Analytics />
-    </div>
-  );
 }
 
