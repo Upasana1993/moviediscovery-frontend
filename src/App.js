@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./index.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -253,3 +254,14 @@ export default function App() {
     </div>
   );
 }
+
+export default function App() {
+  return (
+    <div className="app">
+      {/* your entire app */}
+
+      <Analytics />
+    </div>
+  );
+}
+
